@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>DefendVPN</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{
+  --bg:#050b0c; --card:rgba(255,255,255,.04); --card-b:rgba(255,255,255,.09);
+  --row:#232728; --teal:#10cdbd; --teal-d:#0d4b47; --text:#fff; --muted:#8a9a9a; --red:#ef6a52;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--text);
+  font-family:-apple-system,"SF Pro Display","Segoe UI",Roboto,sans-serif;overflow:hidden}
+#app{position:relative;height:100%;max-width:520px;margin:0 auto;overflow:hidden;
+  background:
+   radial-gradient(60% 40% at 100% 20%,rgba(16,205,189,.45),transparent 70%),
+   radial-gradient(50% 35% at 0% 60%,rgba(16,205,189,.35),transparent 70%),
+   radial-gradient(60% 40% at 100% 100%,rgba(16,205,189,.3),transparent 70%),var(--bg)}
+.screen{position:absolute;inset:0;padding:18px 16px 120px;overflow-y:auto;display:none}
+.screen.active{display:block;animation:fade .2s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.top{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.back{width:48px;height:48px;border-radius:50%;background:rgba(16,205,189,.14);border:1px solid var(--card-b);
+  display:grid;place-items:center;color:#fff;font-size:22px;cursor:pointer;flex:none}
+.pill{padding:14px 24px;border-radius:30px;border:1px solid var(--card-b);background:rgba(0,0,0,.25);
+  font-weight:700;font-size:17px}
+.top .pill{margin:0 auto;transform:translateX(-24px)}
+.card{background:var(--card);border:1px solid var(--card-b);border-radius:26px;padding:18px;margin-bottom:14px;
+  backdrop-filter:blur(8px)}
+.card h3{margin:0 0 10px;font-size:19px}
+.muted{color:var(--muted)}
+.link{color:var(--teal);font-weight:700;cursor:pointer;background:none;border:0;font-size:17px;padding:0}
+.row{display:flex;align-items:center;gap:14px;padding:11px 0;cursor:pointer}
+.ico{width:44px;height:44px;border-radius:50%;background:var(--teal-d);display:grid;place-items:center;flex:none}
+.ico svg{width:22px;height:22px;stroke:var(--teal);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.row .t{flex:1;font-size:18px;font-weight:500}
+.arrow{color:#cfd8d8;font-size:20px}
+.sub{display:flex;justify-content:space-between;align-items:center;overflow:hidden;position:relative;min-height:150px}
+.sub p{margin:0 0 16px;color:var(--muted);font-size:18px;max-width:200px;line-height:1.3}
+.pro{width:150px;height:110px;position:relative;flex:none;margin-right:-8px}
+.pro .base{position:absolute;bottom:0;right:-10px;width:150px;height:50px;border-radius:50%;background:#101313;border:1px solid #222}
+.pro .plate{position:absolute;bottom:26px;right:14px;width:110px;height:68px;border-radius:12px;
+  background:linear-gradient(135deg,#8d9a9a,#3a4545);transform:skewY(-8deg);box-shadow:0 8px 20px #0008}
+.pro b{position:absolute;bottom:6px;right:26px;font-size:46px;letter-spacing:2px;color:#2fd9c8;
+  text-shadow:0 3px 0 #0a6b62,0 6px 10px #0008;font-weight:900}
+.pro i{position:absolute;top:2px;right:6px;width:40px;height:40px;border-radius:50%;
+  background:#18b9ab;display:grid;place-items:center;font-style:normal;font-size:20px}
+.login{background:var(--row);border-radius:20px;padding:16px;display:flex;align-items:center;gap:14px;margin-top:10px}
+.login .i{width:36px;height:36px;display:grid;place-items:center;flex:none}
+.login .m{flex:1;min-width:0}
+.login small{display:block;color:#7b8888;font-size:15px}
+.login .v{font-size:19px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.unbind{color:var(--red);font-weight:600;font-size:17px;cursor:pointer;background:none;border:0}
+.stat{padding:16px 18px;border-radius:22px;margin-bottom:12px}
+.stat small{display:block;color:var(--muted);font-size:17px;margin-bottom:6px}
+.stat div{font-size:32px;font-weight:800}
+.tabs{display:flex;background:rgba(0,0,0,.35);border:1px solid var(--card-b);border-radius:30px;padding:4px;margin-bottom:12px}
+.tabs button{flex:1;border:0;background:none;color:var(--muted);font-size:19px;padding:12px;border-radius:26px;cursor:pointer;font-weight:500}
+.tabs button.on{background:#2f3a3b;color:#fff}
+.linkbox{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--card-b);
+  border-radius:22px;padding:12px 12px 12px 18px}
+.linkbox span{flex:1;font-size:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.copy{width:52px;height:46px;border-radius:14px;background:var(--teal-d);border:0;color:var(--teal);font-size:20px;cursor:pointer}
+.faq{display:flex;align-items:center;gap:14px;padding:22px 20px}
+.faq .n{width:38px;height:38px;border-radius:50%;background:var(--teal-d);color:var(--teal);
+  display:grid;place-items:center;font-weight:700;flex:none}
+.faq .t{flex:1;font-size:19px;font-weight:600}
+.help{display:flex;justify-content:space-between;align-items:center;margin-top:6px}
+.help p{color:var(--muted);font-size:18px;line-height:1.35;margin:0 0 14px;max-width:210px}
+.avatar{width:130px;height:130px;position:relative;flex:none}
+.avatar .b{position:absolute;bottom:0;width:130px;height:44px;border-radius:50%;background:#0f1212;border:1px solid #222}
+.avatar .h{position:absolute;top:8px;left:38px;width:56px;height:56px;border-radius:50%;background:#7b8585;border:6px solid #1dd0c4}
+.avatar .s{position:absolute;top:62px;left:30px;width:72px;height:44px;border-radius:30px 30px 6px 6px;background:#6c7676}
+.chat{display:none;flex-direction:column;height:100%;padding-bottom:110px}
+.screen.active.chatmode{display:flex}
+.hello{text-align:center;font-size:30px;font-weight:800;line-height:1.25;margin:34px 0 22px}
+.chips{display:flex;flex-wrap:wrap;gap:12px;justify-content:center}
+.chip{background:var(--row);border:1px solid var(--card-b);border-radius:24px;padding:16px 20px;font-size:18px;cursor:pointer;color:#fff}
+.msgs{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:10px;margin-top:20px}
+.msg{max-width:80%;padding:12px 16px;border-radius:18px;font-size:17px;line-height:1.35}
+.me{align-self:flex-end;background:var(--teal);color:#002522;border-bottom-right-radius:4px}
+.bot{align-self:flex-start;background:var(--row);border-bottom-left-radius:4px}
+.input{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--card-b);
+  border-radius:30px;padding:8px 8px 8px 22px;margin-top:12px}
+.input input{flex:1;background:none;border:0;outline:0;color:#fff;font-size:18px;min-width:0}
+.input input::placeholder{color:#6f7d7d}
+.send{width:56px;height:50px;border-radius:20px;background:var(--teal-d);border:0;color:var(--teal);font-size:22px;cursor:pointer}
+/* home */
+.hero{text-align:center;margin-top:30px}
+.power{width:190px;height:190px;border-radius:50%;margin:34px auto 22px;border:2px solid var(--card-b);
+  background:radial-gradient(circle,rgba(16,205,189,.2),rgba(0,0,0,.2));display:grid;place-items:center;cursor:pointer;
+  transition:.3s;box-shadow:0 0 0 14px rgba(16,205,189,.05)}
+.power svg{width:80px;height:80px;stroke:var(--muted);fill:none;stroke-width:2;stroke-linecap:round;transition:.3s}
+.power.on{background:radial-gradient(circle,rgba(16,205,189,.55),rgba(16,205,189,.12));box-shadow:0 0 50px rgba(16,205,189,.5),0 0 0 14px rgba(16,205,189,.1)}
+.power.on svg{stroke:#fff}
+.status{font-size:26px;font-weight:800}
+.nav{position:absolute;left:16px;right:16px;bottom:30px;height:84px;border-radius:44px;background:rgba(10,14,15,.85);
+  border:1px solid var(--card-b);display:flex;align-items:center;justify-content:space-around;padding:0 8px;backdrop-filter:blur(14px);z-index:5}
+.nav button{border:0;background:none;width:68px;height:62px;border-radius:32px;display:grid;place-items:center;cursor:pointer;transition:.25s}
+.nav svg{width:30px;height:30px;stroke:#aab5b5;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.nav button.on{background:var(--teal);width:150px}
+.nav button.on svg{stroke:#00211f}
+/* modal */
+.overlay{position:absolute;inset:0;z-index:20;display:none;align-items:center;padding:0 16px;
+  background:rgba(0,0,0,.45);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.overlay.open{display:flex;animation:fade .15s}
+.modal{width:100%;background:rgba(18,32,32,.92);border:1px solid var(--card-b);border-radius:30px;padding:26px;position:relative}
+.modal h4{margin:0 40px 14px 0;font-size:24px}
+.modal p{margin:0;color:#b4c2c2;font-size:19px;line-height:1.4}
+.modal .x{position:absolute;top:22px;right:22px;font-size:24px;color:#cfd8d8;cursor:pointer;background:none;border:0}
+.toast{position:absolute;left:50%;top:20px;transform:translateX(-50%);background:#1c2a2a;border:1px solid var(--card-b);
+  padding:10px 18px;border-radius:20px;z-index:30;display:none;font-size:15px}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="toast" id="toast"></div>
+
+  <!-- HOME -->
+  <section class="screen active" id="s-home">
+    <div class="hero">
+      <div class="muted">Ваш статус</div>
+      <div class="status" id="statusTxt">Не подключено</div>
+      <div class="power" id="power" onclick="toggleVpn()">
+        <svg viewBox="0 0 24 24"><path d="M12 3v9"/><path d="M6.3 6.8a8 8 0 1 0 11.4 0"/></svg>
+      </div>
+      <div class="muted" id="hint">Нажмите, чтобы подключиться</div>
+    </div>
+    <div class="card" style="margin-top:34px">
+      <div class="row" style="padding:0" onclick="toast('Выбор локации скоро появится')">
+        <div class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg></div>
+        <div class="t">Локация<br><small class="muted" style="font-size:15px">Авто (ближайший сервер)</small></div>
+        <span class="arrow">→</span>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Подписка</h3>
+      <div class="muted">Осталось дней: <b style="color:#fff">30</b></div>
+    </div>
+  </section>
+
+  <!-- REFERRAL -->
+  <section class="screen" id="s-ref">
+    <div class="top"><div class="back" onclick="go('home')">‹</div><div class="pill">Реферальная программа</div></div>
+    <div class="card stat"><small>Баланс</small><div>0 ₽</div></div>
+    <div class="card stat"><small>Всего рефералов</small><div>0</div></div>
+    <div class="card stat"><small>Всего заработано</small><div>0 ₽</div></div>
+    <h2 style="margin:22px 0 12px;font-size:23px">Ваша ссылка</h2>
+    <div class="tabs">
+      <button class="on" id="tabSite" onclick="setTab('site')">Для сайта</button>
+      <button id="tabTg" onclick="setTab('tg')">Для TG</button>
+    </div>
+    <div class="linkbox"><span id="refLink"></span><button class="copy" onclick="copyLink()">⧉</button></div>
+  </section>
+
+  <!-- SUPPORT -->
+  <section class="screen" id="s-sup">
+    <div class="top"><div class="back" onclick="go('home')">‹</div><div class="pill">Поддержка</div></div>
+    <div class="card faq" onclick="openFaq(0)"><div class="n">1</div><div class="t">VPN не подключается</div><span class="arrow">→</span></div>
+    <div class="card faq" onclick="openFaq(1)"><div class="n">2</div><div class="t">Как установить VPN?</div><span class="arrow">→</span></div>
+    <div class="card faq" onclick="openFaq(2)"><div class="n">3</div><div class="t">Интернет стал медленнее</div><span class="arrow">→</span></div>
+    <div class="card faq" onclick="openFaq(3)"><div class="n">4</div><div class="t">Нашли баг или ошибку?</div><span class="arrow">→</span></div>
+    <div class="card help">
+      <div><h3>Нужна помощь?</h3><p>Напишите в чат, если возникли проблемы или вопросы</p>
+        <button class="link" onclick="go('chat')">Перейти в чат →</button></div>
+      <div class="avatar"><div class="b"></div><div class="s"></div><div class="h"></div></div>
+    </div>
+  </section>
+
+  <!-- CHAT -->
+  <section class="screen chatmode" id="s-chat" style="display:none">
+    <div class="top"><div class="back" onclick="go('sup')">‹</div><div class="pill">Чат с менеджером</div></div>
+    <div id="welcome">
+      <div class="hello">Здравствуйте 👋<br>С чем вам помочь?</div>
+      <div class="chips">
+        <div class="chip" onclick="quick(this)">Как оплатить подписку</div>
+        <div class="chip" onclick="quick(this)">БАГ</div>
+        <div class="chip" onclick="quick(this)">Рефералка</div>
+        <div class="chip" onclick="quick(this)">Подключить новое устройство</div>
+      </div>
+    </div>
+    <div class="msgs" id="msgs"></div>
+    <div class="input">
+      <input id="chatIn" placeholder="Опишите свой вопрос" onkeydown="if(event.key==='Enter')sendMsg()">
+      <button class="send" onclick="sendMsg()">→</button>
+    </div>
+  </section>
+
+  <!-- SETTINGS -->
+  <section class="screen" id="s-set">
+    <div class="top"><div class="back" onclick="go('home')">‹</div><div class="pill">Настройки</div></div>
+    <div class="card sub">
+      <div><h3>Подписка</h3><p>Настройте подписку под свои потребности</p>
+        <button class="link" onclick="toast('Раздел подписки скоро появится')">Настроить →</button></div>
+      <div class="pro"><div class="base"></div><div class="plate"></div><i>✔</i><b>PRO</b></div>
+    </div>
+    <div class="card">
+      <h3>Аккаунт</h3>
+      <div class="row" onclick="toast('Уведомления')"><div class="ico"><svg viewBox="0 0 24 24"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 8 3 8H3s3-1 3-8"/><path d="M10 20a2 2 0 0 0 4 0"/></svg></div><div class="t">Уведомления</div><span class="arrow">→</span></div>
+      <div class="row" onclick="toast('Устройства')"><div class="ico"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg></div><div class="t">Устройства</div><span class="arrow">→</span></div>
+    </div>
+    <div class="card">
+      <h3>Способы входа</h3>
+      <div class="login">
+        <div class="i"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8l8 5 8-5"/><rect x="3" y="5" width="18" height="14" rx="3"/></svg></div>
+        <div class="m"><small>Email</small><div class="v">user@example.com</div><small>Привязан 16.11.2026</small></div>
+        <button class="unbind" onclick="toast('Отвязать Email')">Отвязать</button>
+      </div>
+      <div class="login">
+        <div class="i"><svg width="36" height="36" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#2aa3e0"/><path d="M5.5 11.8l11.6-4.5c.5-.2 1 .1.8.9l-2 9.2c-.1.6-.5.8-1 .5l-3-2.2-1.4 1.4c-.2.2-.3.3-.6.3l.2-3 5.5-5c.2-.2 0-.3-.4-.1l-6.8 4.3-2.9-.9c-.6-.2-.6-.6.1-.9z" fill="#fff"/></svg></div>
+        <div class="m"><small>Telegram</small><div class="v" id="tgName">@username</div><small>Последний вход <span id="today"></span> · вы вошли этим способом</small></div>
+        <button class="unbind" onclick="toast('Отвязать Telegram')">Отвязать</button>
+      </div>
+      <p style="margin:16px 0 4px"><a class="link" style="font-size:17px;line-height:1.7;font-weight:600">Ещё 1 неактивное приложение (не входили больше 30 дней)</a></p>
+    </div>
+    <div class="card">
+      <h3>Информация</h3>
+      <div class="row" onclick="openUrl('https://example.com/terms')"><div class="ico"><svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="3"/><path d="M9 8h6M9 12h6M9 16h3"/></svg></div><div class="t">Пользовательское соглашение</div><span class="arrow">↗</span></div>
+    </div>
+  </section>
+
+  <!-- MODAL -->
+  <div class="overlay" id="overlay" onclick="if(event.target===this)closeFaq()">
+    <div class="modal"><button class="x" onclick="closeFaq()">✕</button><h4 id="mTitle"></h4><p id="mText"></p></div>
+  </div>
+
+  <!-- NAV -->
+  <nav class="nav" id="nav">
+    <button data-s="home" class="on" onclick="go('home')"><svg viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v8a2 2 0 0 1-2 2h-3v-6H9v6H6a2 2 0 0 1-2-2z"/></svg></button>
+    <button data-s="ref" onclick="go('ref')"><svg viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M5 12v8h14v-8M12 8v12M12 8c-2-4-6-3-5 0M12 8c2-4 6-3 5 0"/></svg></button>
+    <button data-s="sup" onclick="go('sup')"><svg viewBox="0 0 24 24"><path d="M4 14v-2a8 8 0 0 1 16 0v2"/><rect x="3" y="14" width="4" height="6" rx="2"/><rect x="17" y="14" width="4" height="6" rx="2"/></svg></button>
+    <button data-s="set" onclick="go('set')"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+  </nav>
+</div>
+
+<script>
+const tg = window.Telegram && Telegram.WebApp;
+if (tg) { tg.ready(); tg.expand(); try{tg.setHeaderColor('#000000');tg.setBackgroundColor('#050b0c');}catch(e){} }
+const user = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) || {id: 123456, username: 'username'};
+
+// ---- CONFIG (поменяйте под себя) ----
+const BOT_USERNAME = 'DefendVPN_bot';
+const SITE_URL     = 'https://example.com/mini-app/';
+const SUPPORT_URL  = 'https://t.me/your_support';
+
+const $ = id => document.getElementById(id);
+function toast(t){const e=$('toast');e.textContent=t;e.style.display='block';clearTimeout(e._t);e._t=setTimeout(()=>e.style.display='none',1800)}
+function openUrl(u){ (tg && tg.openLink) ? tg.openLink(u) : window.open(u,'_blank') }
+
+// navigation
+let current='home';
+function go(name){
+  current=name;
+  document.querySelectorAll('.screen').forEach(s=>{s.classList.remove('active');s.style.display=''});
+  const el=$('s-'+name); el.classList.add('active');
+  if(name==='chat') el.style.display='flex';
+  const navKey = name==='chat' ? 'sup' : name;
+  document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.s===navKey));
+  if(tg){ try{ (name==='home')?tg.BackButton.hide():tg.BackButton.show() }catch(e){} }
+}
+if(tg){ try{ tg.BackButton.onClick(()=>go('home')) }catch(e){} }
+
+// VPN toggle
+let vpnOn=false;
+function toggleVpn(){
+  vpnOn=!vpnOn;
+  $('power').classList.toggle('on',vpnOn);
+  $('statusTxt').textContent=vpnOn?'Подключено':'Не подключено';
+  $('hint').textContent=vpnOn?'DefendVPN защищает ваше соединение':'Нажмите, чтобы подключиться';
+  if(tg&&tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
+}
+
+// referral
+let tab='site';
+function refUrl(){ return tab==='site' ? `${SITE_URL}?ref=${user.id}` : `https://t.me/${BOT_USERNAME}?start=ref_${user.id}` }
+function setTab(t){tab=t;$('tabSite').classList.toggle('on',t==='site');$('tabTg').classList.toggle('on',t==='tg');$('refLink').textContent=refUrl()}
+function copyLink(){
+  const u=refUrl();
+  (navigator.clipboard?navigator.clipboard.writeText(u):Promise.reject()).then(()=>toast('Ссылка скопирована'))
+   .catch(()=>{const a=document.createElement('textarea');a.value=u;document.body.appendChild(a);a.select();document.execCommand('copy');a.remove();toast('Ссылка скопирована')});
+}
+
+// FAQ
+const FAQ=[
+ ['VPN не подключается','Проверьте подключение к интернету и попробуйте сменить локацию. Если проблема сохраняется - перезапустите приложение'],
+ ['Как установить VPN?','Откройте раздел "Настройка VPN" скачайте приложение и импортируйте ключ доступа'],
+ ['Интернет стал медленнее','Скорость может зависеть от выбранной локации. Попробуйте подключиться к ближайшему серверу'],
+ ['Нашли баг или ошибку?','Опишите проблему в чате поддержки — мы постараемся помочь как можно быстрее']
+];
+function openFaq(i){$('mTitle').textContent=FAQ[i][0];$('mText').textContent=FAQ[i][1];$('overlay').classList.add('open')}
+function closeFaq(){$('overlay').classList.remove('open')}
+
+// chat (локально; для реальной связи отправляйте сообщения боту через tg.sendData или свой API)
+function addMsg(text,who){
+  $('welcome').style.display='none';
+  const d=document.createElement('div');d.className='msg '+who;d.textContent=text;
+  $('msgs').appendChild(d);$('msgs').scrollTop=$('msgs').scrollHeight;
+}
+function sendMsg(){
+  const v=$('chatIn').value.trim(); if(!v) return;
+  addMsg(v,'me'); $('chatIn').value='';
+  if(tg){ try{ tg.sendData(JSON.stringify({type:'support',text:v})) }catch(e){} }
+  setTimeout(()=>addMsg('Спасибо! Менеджер скоро ответит вам.','bot'),700);
+}
+function quick(el){ $('chatIn').value=el.textContent; sendMsg() }
+
+// init
+$('tgName').textContent='@'+(user.username||('id'+user.id));
+$('today').textContent=new Date().toLocaleDateString('ru-RU');
+setTab('site');
+</script>
+</body>
+</html>
